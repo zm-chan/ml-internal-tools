@@ -1,4 +1,8 @@
-import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import {
+  RouterProvider,
+  createBrowserRouter,
+  Navigate,
+} from "react-router-dom";
 import AppLayout from "./pages/AppLayout";
 import ErrorElement from "./pages/ErrorElement";
 import Calendar from "./pages/Calendar";
@@ -14,21 +18,22 @@ const router = createBrowserRouter([
     element: <AppLayout />,
     errorElement: <ErrorElement />,
     children: [
-      { index: true, element: <Calendar /> },
+      { index: true, element: <Navigate to="calendar" /> },
+      { path: "calendar/:day?", element: <Calendar /> },
       {
-        path: "/cashaccount",
+        path: "cashaccount",
         element: <CashAccount />,
       },
       {
-        path: "/totalmonthlysales",
+        path: "totalmonthlysales",
         element: <TotalMonthlySales />,
       },
       {
-        path: "/dailysales/:day",
+        path: "dailysales/:day",
         element: <DailySales />,
       },
       {
-        path: "/customerattendance",
+        path: "customerattendance",
         element: <CustomerAttendance />,
       },
     ],
