@@ -11,11 +11,17 @@ import CashAccount from "./pages/CashAccount";
 import TotalMonthlySales from "./pages/TotalMonthlySales";
 import DailySales from "./pages/DailySales";
 import CustomerAttendance from "./pages/CustomerAttendance";
+import ProtectedRoute from "./components/ProtectedRoute";
+import { AuthContextProvider } from "./context/AuthContext";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <AppLayout />,
+    element: (
+      <ProtectedRoute>
+        <AppLayout />
+      </ProtectedRoute>
+    ),
     errorElement: <ErrorElement />,
     children: [
       { index: true, element: <Navigate to="calendar" /> },
@@ -45,7 +51,11 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <AuthContextProvider>
+      <RouterProvider router={router} />
+    </AuthContextProvider>
+  );
 }
 
 export default App;

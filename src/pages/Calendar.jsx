@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { add, format } from "date-fns";
 import { useState } from "react";
-import { MoveRight } from "lucide-react";
+import { LogOut, MoveRight } from "lucide-react";
 import { MoveLeft } from "lucide-react";
 import CalendarTable from "@/components/CalendarTable";
 import { useNavigate, useParams } from "react-router-dom";
@@ -9,6 +9,8 @@ import useFetchDocs from "@/hooks/useFetchDocs";
 import { getAllDaysInfo } from "@/services/apiFirebase";
 import { extractBankIn, extractCustomers } from "@/util";
 import ScrollToTopButton from "@/components/ScrollToTopButton";
+import { signOut } from "firebase/auth";
+import { auth } from "@/config/firebase";
 
 function Calendar() {
   const { day } = useParams();
@@ -64,11 +66,24 @@ function Calendar() {
     );
   }
 
+  function handleSignOut() {
+    signOut(auth);
+  }
+
   return (
     <section>
       <h2 className="text-center text-2xl font-semibold sm:text-3xl lg:text-4xl">
         {formattedDate}
       </h2>
+
+      <Button
+        variant="outline"
+        onClick={handleSignOut}
+        className="absolute right-3 top-1 flex h-7 items-center border-0 p-0 text-green-700 hover:bg-green-700 hover:text-white min-[480px]:gap-1 min-[480px]:border min-[480px]:border-green-700 min-[480px]:px-2 min-[480px]:shadow sm:right-3 sm:top-3 sm:gap-2 sm:px-3 sm:py-2 lg:h-10 lg:gap-3 lg:px-4 lg:py-2 lg:text-lg lg:shadow-md"
+      >
+        <span className="hidden min-[480px]:block">Sign Out</span>{" "}
+        <LogOut className="min-[480px]:h-4 min-[480px]:w-4 lg:h-5 lg:w-5" />
+      </Button>
 
       <div className="mt-4 flex justify-center gap-8">
         <Button
