@@ -4,7 +4,11 @@ import { useState } from "react";
 import { MoveRight } from "lucide-react";
 import { MoveLeft } from "lucide-react";
 import CalendarTable from "@/components/CalendarTable";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import useFetchDocs from "@/hooks/useFetchDocs";
+import { getAllDaysInfo } from "@/services/apiFirebase";
+import { extractBankIn, extractCustomers } from "@/util";
+import ScrollToTopButton from "@/components/ScrollToTopButton";
 
 function Calendar() {
   const { day } = useParams();
@@ -15,18 +19,49 @@ function Calendar() {
       return new Date();
     }
   });
+
+  const navigate = useNavigate();
+
+  const dateString = currentDateState.toDateString();
   const formattedDate = format(currentDateState, "MMMM yyyy");
+
+  const {
+    data,
+    isLoading: isFetchingLoading,
+    error: isFetchingError,
+  } = useFetchDocs({ getAllDaysInfo, dateString });
+
+  const customersOfTheMonth = extractCustomers(data);
+  const bankInOfTheMonth = extractBankIn(data);
 
   function calculateMonth(date, monthOperationValue) {
     return add(date, { months: monthOperationValue });
   }
 
   function updateMonth(updateMonthValue) {
-    if (window.confirm("Have you saved the data before changing month?")) {
-      setCurrentDateState((previousDateState) => {
-        return calculateMonth(previousDateState, updateMonthValue);
-      });
-    }
+    setCurrentDateState((previousDateState) => {
+      return calculateMonth(previousDateState, updateMonthValue);
+    });
+  }
+
+  let calendarTableContent = (
+    <CalendarTable
+      key={format(currentDateState, "MMM") + "-" + (data?.id || "initial")}
+      currentDateState={currentDateState}
+      customersOfTheMonth={customersOfTheMonth}
+      bankInOfTheMonth={bankInOfTheMonth}
+    />
+  );
+
+  if (isFetchingLoading || isFetchingError) {
+    calendarTableContent = (
+      <CalendarTable
+        key={format(currentDateState, "MMM") + "-" + (data?.id || "initial")}
+        currentDateState={currentDateState}
+        customersOfTheMonth={false}
+        bankInOfTheMonth={false}
+      />
+    );
   }
 
   return (
@@ -34,6 +69,7 @@ function Calendar() {
       <h2 className="text-center text-2xl font-semibold sm:text-3xl lg:text-4xl">
         {formattedDate}
       </h2>
+
       <div className="mt-4 flex justify-center gap-8">
         <Button
           variant="outline"
@@ -52,16 +88,39 @@ function Calendar() {
           <MoveRight />
         </Button>
       </div>
+
       <div className="mt-4 flex flex-col justify-center gap-2 sm:flex-row lg:gap-4">
-        <Button className=" bg-yellow-400 text-yellow-900 hover:bg-yellow-400/90 lg:text-lg">
+        <Button
+          onClick={() => navigate(`/cashaccount/${dateString}`)}
+          className=" bg-yellow-400 text-yellow-900 hover:bg-yellow-400/90 lg:text-lg"
+        >
           Cash Account
         </Button>
-        <Button className=" bg-sky-400 text-sky-900 hover:bg-sky-400/90 lg:text-lg">
+        <Button
+          onClick={() => navigate(`/totalmonthlysales/${dateString}`)}
+          className=" bg-sky-400 text-sky-900 hover:bg-sky-400/90 lg:text-lg"
+        >
           Total Monthly Sales
         </Button>
-        <Button className="lg:text-lg">Customer Attendance</Button>
+        <Button
+          onClick={() => navigate(`/customerattendance/${dateString}`)}
+          className="lg:text-lg"
+        >
+          Customer Attendance
+        </Button>
       </div>
-      <CalendarTable currentDateState={currentDateState} />
+
+      {isFetchingError ? (
+        <p className="mt-1 text-center text-red-600">
+          Error fetching data. Try to reload again.
+        </p>
+      ) : (
+        <p className="invisible mt-1 text-center">Space for error purpose</p>
+      )}
+
+      {calendarTableContent}
+
+      <ScrollToTopButton />
     </section>
   );
 }

@@ -21,11 +21,11 @@ const router = createBrowserRouter([
       { index: true, element: <Navigate to="calendar" /> },
       { path: "calendar/:day?", element: <Calendar /> },
       {
-        path: "cashaccount",
+        path: "cashaccount/:day",
         element: <CashAccount />,
       },
       {
-        path: "totalmonthlysales",
+        path: "totalmonthlysales/:day",
         element: <TotalMonthlySales />,
       },
       {
@@ -33,7 +33,7 @@ const router = createBrowserRouter([
         element: <DailySales />,
       },
       {
-        path: "customerattendance",
+        path: "customerattendance/:day",
         element: <CustomerAttendance />,
       },
     ],

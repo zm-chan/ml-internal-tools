@@ -10,7 +10,11 @@ import {
 
 import { useNavigate } from "react-router-dom";
 
-function CalendarTable({ currentDateState }) {
+function CalendarTable({
+  currentDateState,
+  customersOfTheMonth,
+  bankInOfTheMonth,
+}) {
   const navigate = useNavigate();
 
   function handleSelectDay(day, notSameMonth) {
@@ -55,11 +59,41 @@ function CalendarTable({ currentDateState }) {
       days.push(
         <div
           key={day}
-          className={`min-h-48 space-x-3 rounded-sm bg-white text-xl font-bold  sm:space-x-2 ${notSameMonth ? "text-gray-300" : "text-teal-700"}`}
           onClick={() => handleSelectDay(cloneDay, notSameMonth)}
+          className="flex min-h-48 flex-col justify-between rounded-sm bg-white"
         >
-          <span className="xl:hidden">{displayDay}</span>
-          <span>{displayDate}</span>
+          <div className="flex items-center justify-between p-3">
+            <p
+              className={`space-x-3 text-xl font-bold  sm:space-x-2 ${notSameMonth ? "text-gray-300" : "text-teal-700"}`}
+            >
+              <span className="xl:hidden">{displayDay}</span>
+              <span>{displayDate}</span>
+            </p>
+            {bankInOfTheMonth &&
+              bankInOfTheMonth[displayDate] &&
+              !notSameMonth && (
+                <p className="rounded bg-amber-300 px-2 py-1 text-amber-700">
+                  Bank In
+                </p>
+              )}
+          </div>
+
+          {customersOfTheMonth &&
+            customersOfTheMonth[displayDate] &&
+            !notSameMonth && (
+              <div className="space-y-2 p-3">
+                {customersOfTheMonth[displayDate].map((customersOfTheDay) => {
+                  return (
+                    <div
+                      key={customersOfTheDay.split(" ").join("-")}
+                      className="rounded bg-sky-300 py-1 text-center text-sky-700 lg:text-lg"
+                    >
+                      {customersOfTheDay}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
         </div>,
       );
 
@@ -74,7 +108,7 @@ function CalendarTable({ currentDateState }) {
   }
 
   return (
-    <div className="mt-6 rounded-md bg-primary/30 p-4">
+    <div className="mt-6 rounded-md bg-primary/30 p-4 md:mt-4">
       {renderDays()}
       {renderCells()}
     </div>

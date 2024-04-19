@@ -5,21 +5,93 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import CustomerDialog from "@/components/CustomerDialog";
 import BankInDialog from "@/components/BankInDialog";
+import useFetchDoc from "@/hooks/useFetchDoc";
+import { getDayInfo, setDayInfo } from "@/services/apiFirebase";
+import useSetDoc from "@/hooks/useSetDoc";
+import { isObjectEmpty } from "@/util";
+import ScrollToTopButton from "@/components/ScrollToTopButton";
 
-const totalSalesBeforeToday = 0;
+// const totalSalesBeforeToday = 0;
 
 function DailySales() {
   const { day } = useParams();
   const dateState = new Date(day);
 
-  // TODO: fetch customer, fetch totalSalesBeforeToday
-  const [todayCustomersInfo, setTodayCustomersInfo] = useState({});
-  const [todayBankInInfo, setTodayBankInInfo] = useState({});
+  // TODO: fetch totalSalesBeforeToday
+  // data: { todayCustomersInfo = {}, todayBankInInfo = {} } = {},
 
-  const [editId, setEditId] = useState(null);
+  const {
+    data: {
+      dayData: { todayCustomersInfo = {}, todayBankInInfo = {} } = {},
+      monthlyTotalSalesData = {},
+    } = {},
+    isLoading: isFetchingLoading,
+    error: isFetchingError,
+    setData,
+    setRefetch,
+  } = useFetchDoc({ getDayInfo, day });
 
+  const {
+    mutate,
+    isLoading: isSettingLoading,
+    error: isSettingError,
+  } = useSetDoc({
+    mutationFn: setDayInfo,
+    onSuccess: () => setRefetch((prev) => !prev),
+  });
+
+  let fetchAndSetStates = (
+    <p className="invisible mt-1 text-center">
+      Space for fetching and setting purpose
+    </p>
+  );
+
+  if (isFetchingLoading) {
+    fetchAndSetStates = <p className="mt-1 text-center">Fetching data...</p>;
+  }
+  if (isFetchingError) {
+    fetchAndSetStates = (
+      <p className="mt-1 text-center text-red-600">
+        Something went wrong with fetching data
+      </p>
+    );
+  }
+
+  if (isSettingLoading) {
+    fetchAndSetStates = <p className="mt-1 text-center">Setting data...</p>;
+  }
+  if (isSettingError) {
+    fetchAndSetStates = (
+      <p className="mt-1 text-center text-red-600">
+        Something went wrong with setting data
+      </p>
+    );
+  }
+
+  let totalSalesBeforeToday;
+
+  if (isObjectEmpty(monthlyTotalSalesData)) {
+    totalSalesBeforeToday = 0;
+  } else {
+    totalSalesBeforeToday = Object.keys(monthlyTotalSalesData).reduce(
+      (previous, current) => {
+        const currentValue =
+          parseFloat(current) < parseFloat(format(dateState, "d"))
+            ? parseFloat(monthlyTotalSalesData[current])
+            : 0;
+
+        return previous + currentValue;
+      },
+      0,
+    );
+  }
+
+  // const [todayCustomersInfo, setTodayCustomersInfo] = useState({});
+  // const [todayBankInInfo, setTodayBankInInfo] = useState({});
   // console.log(todayCustomersInfo);
   // console.log(todayBankInInfo);
+
+  const [editId, setEditId] = useState(null);
 
   const [openCustomerDialog, setOpenCustomerDialog] = useState(false);
   const [openBankInDialog, setOpenBankInDialog] = useState(false);
@@ -42,10 +114,28 @@ function DailySales() {
   }
 
   function handleCustomerInfo(customerInfo) {
-    setTodayCustomersInfo((prevState) => {
+    // setTodayCustomersInfo((prevState) => {
+    //   return {
+    //     ...prevState,
+    //     [customerInfo.id]: customerInfo,
+    //   };
+    // });
+
+    setData((prevState) => {
+      const { dayData: { todayCustomersInfo = {} } = {} } = prevState;
+      const updatedTodayCustomersInfo = {
+        ...todayCustomersInfo,
+        [customerInfo.id]: customerInfo,
+      };
+
+      const newDayData = {
+        ...prevState.dayData,
+        todayCustomersInfo: updatedTodayCustomersInfo,
+      };
+
       return {
         ...prevState,
-        [customerInfo.id]: customerInfo,
+        dayData: newDayData,
       };
     });
 
@@ -72,10 +162,24 @@ function DailySales() {
     handleCloseCustomerDialog();
   }
   function handleBankInInfo(bankInInfo) {
-    setTodayBankInInfo((prevState) => {
+    // setTodayBankInInfo((prevState) => {
+    //   return {
+    //     ...prevState,
+    //     ...bankInInfo,
+    //   };
+    // });
+
+    setData((prevState) => {
+      const updatedTodayBankInInfo = bankInInfo;
+
+      const newDayData = {
+        ...prevState.dayData,
+        todayBankInInfo: updatedTodayBankInInfo,
+      };
+
       return {
         ...prevState,
-        ...bankInInfo,
+        dayData: newDayData,
       };
     });
 
@@ -95,37 +199,63 @@ function DailySales() {
     setOpenBankInDialog(false);
   }
 
-  function handleSaveData() {
+  async function handleSaveData() {
     const formattedData = {
       todayCustomersInfo,
       todayBankInInfo,
     };
 
-    formattedData.todayTotalSales = Object.values(todayCustomersInfo).reduce(
-      (previous, current) => {
+    formattedData.todayTotalSales = Object.values(todayCustomersInfo)
+      .reduce((previous, current) => {
         return (
-          previous + Number.parseInt(current.cash) ||
-          0 + Number.parseInt(current.card) ||
-          0 + Number.parseInt(current.memberPoint) ||
-          0
+          previous +
+          (parseFloat(current.cash) || 0) +
+          (parseFloat(current.card) || 0) +
+          (parseFloat(current.mp) || 0)
         );
-      },
-      0,
-    );
+      }, 0)
+      .toFixed(2);
 
-    console.log(formattedData);
+    const updatedTotalSales = {
+      ...monthlyTotalSalesData,
+      [format(dateState, "d")]: formattedData.todayTotalSales,
+    };
 
-    // format date for firebase as id
+    // console.log(formattedData);
 
-    // TODO: Submit data to firebase
+    mutate(dateState, { formattedData, updatedTotalSales });
   }
 
   function deleteCustomer(id) {
-    setTodayCustomersInfo((prevState) => {
-      let { [id]: _, ...filteredCustomers } = prevState;
+    // setTodayCustomersInfo((prevState) => {
+    //   const { [id]: _, ...filteredCustomers } = prevState;
 
-      return filteredCustomers;
+    //   return filteredCustomers;
+    // });
+
+    setData((prevState) => {
+      const { dayData: { todayCustomersInfo = {} } = {} } = prevState;
+
+      const { [id]: _, ...filteredCustomers } = todayCustomersInfo;
+
+      const newDayData = {
+        ...prevState.dayData,
+        todayCustomersInfo: filteredCustomers,
+      };
+
+      return {
+        ...prevState,
+        dayData: newDayData,
+      };
     });
+  }
+
+  function backToCalendar() {
+    if (
+      window.confirm("Have you saved the data before going back to calendar?")
+    ) {
+      navigate(`/calendar/${day}`);
+    }
   }
 
   return (
@@ -174,7 +304,7 @@ function DailySales() {
       </div>
       <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:justify-center md:gap-4">
         <Button
-          onClick={() => navigate(`/calendar/${day}`)}
+          onClick={backToCalendar}
           className=" bg-yellow-400 text-yellow-900 hover:bg-yellow-400/90 lg:text-lg"
         >
           Go Back To Calendar
@@ -193,11 +323,15 @@ function DailySales() {
         </Button>
         <Button
           onClick={handleSaveData}
+          disabled={isSettingLoading}
           className=" bg-red-400 text-red-900 hover:bg-red-400/90 lg:text-lg"
         >
           Save Data
         </Button>
       </div>
+
+      {fetchAndSetStates}
+
       <DailySalesTable
         todayCustomersInfo={todayCustomersInfo}
         deleteCustomer={deleteCustomer}
@@ -216,6 +350,8 @@ function DailySales() {
         handleBankInInfo={handleBankInInfo}
         bankInInfo={todayBankInInfo}
       />
+
+      <ScrollToTopButton />
     </section>
   );
 }

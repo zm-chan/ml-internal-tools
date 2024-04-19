@@ -41,8 +41,17 @@ function CustomerDialog({
     const cardData = formData.get("card");
     const mpData = formData.get("mp");
     const vip10Data = formData.get("vip10");
+    const productSalesData = formData.get("productSales");
+    const courseData = formData.get("course");
 
-    const arrayHasNaN = [cashData, cardData, mpData, vip10Data]
+    const arrayHasNaN = [
+      cashData,
+      cardData,
+      mpData,
+      vip10Data,
+      productSalesData,
+      courseData,
+    ]
       .map((data) => {
         const cleanedData = data.trim();
 
@@ -61,7 +70,7 @@ function CustomerDialog({
     const customerNameData = formData.get("customerName");
 
     // TODO: must uncomment it
-    if (customerNameData === "" || customerNameData.length < 5) {
+    if (customerNameData === "" || customerNameData.length < 3) {
       return setError(true);
     }
 
@@ -176,6 +185,7 @@ function CustomerDialog({
           <DialogFooter className="mt-6 gap-2 sm:gap-0 lg:space-x-3">
             <Button
               variant="outline"
+              type="button"
               onClick={handleFormSubmit}
               className="lg:text-lg"
             >

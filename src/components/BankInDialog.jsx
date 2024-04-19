@@ -38,22 +38,42 @@ function BankInDialog({
     const amountData = formData.get("amount");
     const bankTypeData = formData.get("bankType");
 
-    const formattedAmount = amountData
-      .split(",")
-      .map((value) => parseFloat(value.trim()));
-    const formattedBankType = bankTypeData
-      .split(",")
-      .map((value) => value.trim());
+    const amountArray = amountData.split(",");
+    const bankTypeArray = bankTypeData.split(",");
 
-    if (formattedAmount.length !== formattedBankType.length) {
+    // different length
+    if (amountArray.length !== bankTypeArray.length) {
       return setError(true);
     }
 
-    if (formattedAmount.some((value) => isNaN(value))) {
+    // any amount is not a number
+    if (amountArray.some((value) => isNaN(value))) {
+      return setError(true);
+    }
+
+    // amount is a number but bank is empty
+    if (
+      !amountArray.some((value) => isNaN(value)) &&
+      amountArray.every((value) => !!parseFloat(value)) &&
+      bankTypeArray.some((value) => value.length === 0)
+    ) {
       return setError(true);
     }
 
     setError(false);
+
+    // if both are empty values
+    if (
+      amountArray.every((value) => value.length === 0) &&
+      bankTypeArray.every((value) => value.length === 0)
+    ) {
+      return handleBankInInfo({});
+    }
+
+    const formattedAmount = amountArray.map((value) =>
+      parseFloat(value.trim()),
+    );
+    const formattedBankType = bankTypeArray.map((value) => value.trim());
 
     handleBankInInfo({ amount: formattedAmount, bankType: formattedBankType });
   }
@@ -62,7 +82,7 @@ function BankInDialog({
     <Dialog open={openDialog} onOpenChange={closeDialog}>
       <DialogContent className="sm:max-w-[425px] lg:max-w-fit">
         <DialogHeader>
-          <DialogTitle className="lg:text-2xl">Customer Info</DialogTitle>
+          <DialogTitle className="lg:text-2xl">Bank In Info</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleFormSubmit}>
           <div className="grid grid-cols-2 gap-3  lg:text-lg">
@@ -97,6 +117,7 @@ function BankInDialog({
           <DialogFooter className="mt-6 gap-2 sm:gap-0 lg:space-x-3">
             <Button
               variant="outline"
+              type="button"
               onClick={handleFormSubmit}
               className="lg:text-lg"
             >

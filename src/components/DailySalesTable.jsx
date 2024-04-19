@@ -75,32 +75,32 @@ function DailySalesTable({
 
   const totalCash = customers
     .reduce((previous, current) => {
-      return previous + parseFloat(current.cash) || 0;
+      return previous + (parseFloat(current.cash) || 0);
     }, 0)
     .toFixed(2);
   const totalCard = customers
     .reduce((previous, current) => {
-      return previous + parseFloat(current.card) || 0;
+      return previous + (parseFloat(current.card) || 0);
     }, 0)
     .toFixed(2);
   const totalMemberPoint = customers
     .reduce((previous, current) => {
-      return previous + parseFloat(current.mp) || 0;
+      return previous + (parseFloat(current.mp) || 0);
     }, 0)
     .toFixed(2);
   const totalProductSales = customers
     .reduce((previous, current) => {
-      return previous + parseFloat(current.productSales) || 0;
+      return previous + (parseFloat(current.productSales) || 0);
     }, 0)
     .toFixed(2);
   const totalCourse = customers
     .reduce((previous, current) => {
-      return previous + parseFloat(current.course) || 0;
+      return previous + (parseFloat(current.course) || 0);
     }, 0)
     .toFixed(2);
   const totalVIP = customers
     .reduce((previous, current) => {
-      return previous + parseFloat(current.vip10) || 0;
+      return previous + (parseFloat(current.vip10) || 0);
     }, 0)
     .toFixed(2);
 
