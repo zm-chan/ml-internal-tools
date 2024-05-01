@@ -123,8 +123,11 @@ function DailySales() {
 
     setData((prevState) => {
       const { dayData: { todayCustomersInfo = {} } = {} } = prevState;
+
+      const { [editId]: _, ...restOfTheCustomers } = todayCustomersInfo;
+
       const updatedTodayCustomersInfo = {
-        ...todayCustomersInfo,
+        ...restOfTheCustomers,
         [customerInfo.id]: customerInfo,
       };
 
