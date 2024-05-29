@@ -90,7 +90,9 @@ function CashAccountTable({ monthData, previousCashBalance, day }) {
               <TableCell></TableCell>
               <TableCell></TableCell>
               <TableCell className="text-red-700">Bal</TableCell>
-              <TableCell>RM {temporaryCashBalance.toFixed(2)}</TableCell>
+              <TableCell className="text-red-700">
+                RM {temporaryCashBalance.toFixed(2)}
+              </TableCell>
               <TableCell></TableCell>
               <TableCell></TableCell>
             </TableRow>

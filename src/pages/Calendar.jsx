@@ -36,6 +36,8 @@ function Calendar() {
   const customersOfTheMonth = extractCustomers(data);
   const bankInOfTheMonth = extractBankIn(data);
 
+  // console.log(customersOfTheMonth);
+
   function calculateMonth(date, monthOperationValue) {
     return add(date, { months: monthOperationValue });
   }
