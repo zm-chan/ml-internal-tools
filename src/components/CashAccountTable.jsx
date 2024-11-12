@@ -150,7 +150,8 @@ function CashAccountTable({ monthData, previousCashBalance, day }) {
         return (
           !!parseFloat(customer.card) ||
           !!parseFloat(customer.cash) ||
-          !!parseFloat(customer.mp)
+          !!parseFloat(customer.mp) ||
+          !!parseFloat(customer.vip10)
         );
       });
 

@@ -139,37 +139,39 @@ function DailySalesTable({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {customers.map((customer, i) => (
-          <TableRow key={customer.customerName}>
-            <TableCell className="font-medium">{i + 1}</TableCell>
-            <TableCell>{customer.cash}</TableCell>
-            <TableCell>{customer.card}</TableCell>
-            <TableCell>{customer.memberPoint}</TableCell>
-            <TableCell>{customer.customerName}</TableCell>
-            <TableCell>{customer.productSales}</TableCell>
-            <TableCell>{customer.course}</TableCell>
-            <TableCell>{customer.invNo}</TableCell>
-            <TableCell>{customer.vip10}</TableCell>
-            <TableCell>
-              <div className="flex flex-row gap-1 lg:flex-col ">
-                <Button
-                  onClick={() => handleEditCustomer(customer.id)}
-                  className="h-7 w-7 bg-yellow-400 text-yellow-900 hover:bg-yellow-400/90 lg:h-10 lg:w-10"
-                  size="icon"
-                >
-                  <FilePenLine className="h-5 w-5 lg:h-6 lg:w-6" />
-                </Button>
-                <Button
-                  onClick={() => handleDeleteCustomer(customer.id)}
-                  className=" h-7 w-7 bg-red-400 text-red-900 hover:bg-red-400/90 lg:h-10 lg:w-10"
-                  size="icon"
-                >
-                  <CircleX className="h-5 w-5 lg:h-6 lg:w-6" />
-                </Button>
-              </div>
-            </TableCell>
-          </TableRow>
-        ))}
+        {customers.map((customer, i) => {
+          return (
+            <TableRow key={customer.customerName}>
+              <TableCell className="font-medium">{i + 1}</TableCell>
+              <TableCell>{customer.cash}</TableCell>
+              <TableCell>{customer.card}</TableCell>
+              <TableCell>{customer.mp}</TableCell>
+              <TableCell>{customer.customerName}</TableCell>
+              <TableCell>{customer.productSales}</TableCell>
+              <TableCell>{customer.course}</TableCell>
+              <TableCell>{customer.invNo}</TableCell>
+              <TableCell>{customer.vip10}</TableCell>
+              <TableCell>
+                <div className="flex flex-row gap-1 lg:flex-col ">
+                  <Button
+                    onClick={() => handleEditCustomer(customer.id)}
+                    className="h-7 w-7 bg-yellow-400 text-yellow-900 hover:bg-yellow-400/90 lg:h-10 lg:w-10"
+                    size="icon"
+                  >
+                    <FilePenLine className="h-5 w-5 lg:h-6 lg:w-6" />
+                  </Button>
+                  <Button
+                    onClick={() => handleDeleteCustomer(customer.id)}
+                    className=" h-7 w-7 bg-red-400 text-red-900 hover:bg-red-400/90 lg:h-10 lg:w-10"
+                    size="icon"
+                  >
+                    <CircleX className="h-5 w-5 lg:h-6 lg:w-6" />
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          );
+        })}
         <TableRow>
           <TableCell colSpan={5}></TableCell>
           <TableCell>Total(a): {totalProductSales}</TableCell>
