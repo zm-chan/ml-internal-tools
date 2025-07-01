@@ -14,12 +14,14 @@ function TotalMonthlySalesTable({ monthData, numberOfDaysInTheMonth }) {
 
     return Object.values(todayCustomersInfo).reduce(
       (previous, current) => {
+        const currentProductSales = parseFloat(current.productSales) || 0;
+        const currentCourse = parseFloat(current.course) || 0;
+
         previous.totalProduct = (
-          parseFloat(previous.totalProduct) +
-          (parseFloat(current.productSales) || 0)
+          parseFloat(previous.totalProduct) + currentProductSales
         ).toFixed(2);
         previous.totalCourse = (
-          parseFloat(previous.totalCourse) + (parseFloat(current.course) || 0)
+          parseFloat(previous.totalCourse) + currentCourse
         ).toFixed(2);
         previous.totalOfTheDay = (
           parseFloat(previous.totalProduct) + parseFloat(previous.totalCourse)
@@ -30,9 +32,41 @@ function TotalMonthlySalesTable({ monthData, numberOfDaysInTheMonth }) {
         previous.totalCard = (
           parseFloat(previous.totalCard) + (parseFloat(current.card) || 0)
         ).toFixed(2);
-        previous.totalMP = (
-          parseFloat(previous.totalMP) + (parseFloat(current.mp) || 0)
-        ).toFixed(2);
+
+        const currentMP = parseFloat(current.mp) || 0;
+
+        if (currentMP > 0) {
+          if (currentProductSales > 0 && currentCourse > 0) {
+            if (currentMP > currentProductSales) {
+              const currentMPProd = currentMP;
+              const remainingMP = currentMP - currentProductSales;
+
+              previous.totalMPProd = (
+                parseFloat(previous.totalMPProd) + currentMPProd
+              ).toFixed(2);
+
+              previous.totalMPTrt = (
+                parseFloat(previous.totalMPTrt) + remainingMP
+              ).toFixed(2);
+            } else if (currentMP < currentProductSales) {
+              const currentMPProd = currentMP;
+
+              previous.totalMPProd = (
+                parseFloat(previous.totalMPProd) + currentMPProd
+              ).toFixed(2);
+            }
+          } else if (currentProductSales > 0) {
+            const currentMPProd = currentMP;
+            previous.totalMPProd = (
+              parseFloat(previous.totalMPProd) + currentMPProd
+            ).toFixed(2);
+          } else if (currentCourse > 0) {
+            const currentMPTrt = currentMP;
+            previous.totalMPTrt = (
+              parseFloat(previous.totalMPTrt) + currentMPTrt
+            ).toFixed(2);
+          }
+        }
 
         if (current.vip10.includes("cash")) {
           previous.totalVIPCash = (
@@ -57,7 +91,8 @@ function TotalMonthlySalesTable({ monthData, numberOfDaysInTheMonth }) {
         totalOfTheDay: (0).toFixed(2),
         totalCash: (0).toFixed(2),
         totalCard: (0).toFixed(2),
-        totalMP: (0).toFixed(2),
+        totalMPProd: (0).toFixed(2),
+        totalMPTrt: (0).toFixed(2),
         totalVIPCash: (0).toFixed(2),
         totalVIPCard: (0).toFixed(2),
       },
@@ -97,9 +132,14 @@ function TotalMonthlySalesTable({ monthData, numberOfDaysInTheMonth }) {
           parseFloat(previous.grandTotalCard) +
           parseFloat(dayCalculations.totalCard)
         ).toFixed(2);
-        previous.grandTotalMP = (
-          parseFloat(previous.grandTotalMP) +
-          parseFloat(dayCalculations.totalMP)
+        previous.grandTotalMPProd = (
+          parseFloat(previous.grandTotalMPProd) +
+          parseFloat(dayCalculations.totalMPProd)
+        ).toFixed(2);
+
+        previous.grandTotalMPTrt = (
+          parseFloat(previous.grandTotalMPTrt) +
+          parseFloat(dayCalculations.totalMPTrt)
         ).toFixed(2);
 
         previous.grandTotalVIPCash = (
@@ -120,7 +160,8 @@ function TotalMonthlySalesTable({ monthData, numberOfDaysInTheMonth }) {
         grandTotalOfTheDay: 0,
         grandTotalCash: 0,
         grandTotalCard: 0,
-        grandTotalMP: 0,
+        grandTotalMPProd: 0,
+        grandTotalMPTrt: 0,
         grandTotalVIPCash: 0,
         grandTotalVIPCard: 0,
       },
@@ -132,7 +173,8 @@ function TotalMonthlySalesTable({ monthData, numberOfDaysInTheMonth }) {
       "grandTotalOfTheDay",
       "grandTotalCash",
       "grandTotalCard",
-      "grandTotalMP",
+      "grandTotalMPProd",
+      "grandTotalMPTrt",
       "grandTotalVIPCash",
       "grandTotalVIPCard",
     ].map((key) => {
@@ -151,7 +193,10 @@ function TotalMonthlySalesTable({ monthData, numberOfDaysInTheMonth }) {
     <Table className="my-3 lg:text-lg">
       <TableHeader>
         <TableRow className="border-t">
-          <TableHead colSpan={7} className="text-center"></TableHead>
+          <TableHead colSpan={6} className="text-center"></TableHead>
+          <TableHead colSpan={2} className="text-center">
+            M.POINT(EW)
+          </TableHead>
           <TableHead colSpan={2} className="text-center">
             VIP
           </TableHead>
@@ -163,7 +208,8 @@ function TotalMonthlySalesTable({ monthData, numberOfDaysInTheMonth }) {
           <TableHead className="text-center">TOTAL</TableHead>
           <TableHead className="text-center">CASH</TableHead>
           <TableHead className="text-center">CARD</TableHead>
-          <TableHead className="text-center">M.POINT(EW)</TableHead>
+          <TableHead className="text-center">PROD</TableHead>
+          <TableHead className="text-center">TRT</TableHead>
           <TableHead className="text-center">CASH</TableHead>
           <TableHead className="text-center">CARD</TableHead>
         </TableRow>
@@ -178,7 +224,8 @@ function TotalMonthlySalesTable({ monthData, numberOfDaysInTheMonth }) {
                 totalOfTheDay,
                 totalCash,
                 totalCard,
-                totalMP,
+                totalMPProd,
+                totalMPTrt,
                 totalVIPCash,
                 totalVIPCard,
               } = calculateDayData(monthData[element]);
@@ -212,9 +259,14 @@ function TotalMonthlySalesTable({ monthData, numberOfDaysInTheMonth }) {
                     {totalCard}
                   </TableCell>
                   <TableCell
-                    className={`${parseFloat(totalMP) > 0 && "bg-green-300 text-green-700"}`}
+                    className={`${parseFloat(totalMPProd) > 0 && "bg-green-300 text-green-700"}`}
                   >
-                    {totalMP}
+                    {totalMPProd}
+                  </TableCell>
+                  <TableCell
+                    className={`${parseFloat(totalMPTrt) > 0 && "bg-green-300 text-green-700"}`}
+                  >
+                    {totalMPTrt}
                   </TableCell>
                   <TableCell
                     className={`${parseFloat(totalVIPCash) > 0 && "bg-green-300 text-green-700"}`}
@@ -241,6 +293,7 @@ function TotalMonthlySalesTable({ monthData, numberOfDaysInTheMonth }) {
                 <TableCell>0.00</TableCell>
                 <TableCell>0.00</TableCell>
                 <TableCell>0.00</TableCell>
+                <TableCell>0.00</TableCell>
               </TableRow>
             );
           },
@@ -257,9 +310,11 @@ function TotalMonthlySalesTable({ monthData, numberOfDaysInTheMonth }) {
           <TableCell></TableCell>
           <TableCell></TableCell>
           <TableCell></TableCell>
+          <TableCell></TableCell>
         </TableRow>
         <TableRow>
           <TableCell>GST(EW)</TableCell>
+          <TableCell></TableCell>
           <TableCell></TableCell>
           <TableCell></TableCell>
           <TableCell></TableCell>

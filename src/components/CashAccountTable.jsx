@@ -231,7 +231,7 @@ function CashAccountTable({ monthData, previousCashBalance, day }) {
                 skipMatchedPayment.push(j);
               } else if (typeOfProductAndAmount < paymentMethodAndAmount) {
                 paymentDeduction[i][j] = typeOfProductAndAmount;
-                paymentMethodAndAmount =
+                paymentMethodsAndAmount[j] =
                   paymentMethodAndAmount - typeOfProductAndAmount;
                 productSuccessfullyDeducted = true;
               } else if (typeOfProductAndAmount > paymentMethodAndAmount) {
